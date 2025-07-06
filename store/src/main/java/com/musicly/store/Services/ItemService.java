@@ -5,11 +5,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import com.musicly.store.Domain.Item.Item;
 import com.musicly.store.Domain.Item.ItemRepository;
-import com.musicly.store.Models.ItemDTO;
 
 @Service
 public class ItemService {
-    private final ItemRepository itemRepository; 
+    private final ItemRepository itemRepository;
 
     public ItemService(ItemRepository itemRepository){
         this.itemRepository = itemRepository;
