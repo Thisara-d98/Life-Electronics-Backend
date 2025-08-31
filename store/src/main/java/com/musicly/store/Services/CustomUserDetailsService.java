@@ -1,5 +1,7 @@
 package com.musicly.store.Services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,7 +18,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findUserByEmail(email);
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("Username Not Found"));
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())

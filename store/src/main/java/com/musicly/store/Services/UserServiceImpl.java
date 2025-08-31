@@ -1,6 +1,7 @@
 package com.musicly.store.Services;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.musicly.store.Domain.User.User;
 import com.musicly.store.Domain.User.UserRepository;
@@ -18,8 +19,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User GetUserById(int id) {
-        User user = userRepository.findUserById(0);
+    public Optional<User> GetUserById(int id) {
+        Optional<User> user = userRepository.findUserById(0);
         return user;
     }
 
@@ -35,12 +36,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void DeleteUser(int id) {
-        User user = userRepository.findUserById(id);
-        userRepository.delete(user);
+        Optional<User> user = userRepository.findUserById(id);
+        if(user.isPresent()){
+            userRepository.delete(user.get());
+        }
+        
     }
 
     @Override
-    public User GetUserByUserName(String userName) {
+    public Optional<User> GetUserByUserName(String userName) {
         return userRepository.findUserByUserName(userName);
     }
 }
