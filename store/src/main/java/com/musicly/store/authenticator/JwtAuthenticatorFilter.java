@@ -30,10 +30,6 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter{
     @Autowired
     private JwtBlacklistService jwtBlacklistService;
 
-    protected void doFilterInternal(){
-
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException{
         final String authorizationHeader = request.getHeader("Authorization");
