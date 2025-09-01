@@ -7,6 +7,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
+
+import com.musicly.store.Services.JwtBlacklistService;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -16,10 +19,17 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Component
 public class JwtUtil {
+
+  
     private final SecretKey secretKey;
     private int jwtExpiration;
+
+    @Autowired
+    private JwtBlacklistService jwtBlacklistService;
 
     public JwtUtil(){
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -71,12 +81,21 @@ public class JwtUtil {
 
 
     public Boolean validateToken(String token, UserDetails userDetails){
-        final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final String username = extractUserName(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    String extractUserName(String token) {
+    public String extractUserName(String token) {
         return extractClaim(token, null);
+    }
+
+    public boolean isTokenBlacklisted(String token, UserDetails userDetails) {
+        if(jwtBlacklistService.isTokenBlacklisted(token)){
+            return false;
+        }
+        final String username = extractUserName(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+
     }
 
 }
