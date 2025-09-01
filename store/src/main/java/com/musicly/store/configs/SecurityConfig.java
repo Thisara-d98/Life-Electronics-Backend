@@ -2,6 +2,7 @@ package com.musicly.store.configs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -50,15 +51,25 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                                 .requestMatchers("api/auth/**").permitAll()
+                                .requestMatchers("api/auth/logout").authenticated()
                                 .requestMatchers("api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("api/client/**").hasRole("CLIENT")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout-> logout
+                        .logoutUrl("/api/auth/spring-logout")
+                        .logoutSuccessHandler((request,response,authentication) -> {
+                            response.setStatus(HttpStatus.OK.value());
+                            response.getWriter().write("{\"message\":\"Logged out successfully\"}");
+                            response.setContentType("application/json");
+                        })
+                        
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                );
 
         return http.build();
     }
-
-
 }
