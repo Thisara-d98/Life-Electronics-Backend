@@ -9,8 +9,11 @@ import com.musicly.store.Models.JwtResponse;
 import com.musicly.store.Models.LoginRequest;
 import com.musicly.store.Models.MessageResponse;
 import com.musicly.store.Models.SignupRequest;
+import com.musicly.store.Services.JwtBlacklistService;
 import com.musicly.store.authenticator.JwtUtil;
 import com.musicly.store.enums.Roles;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -47,6 +50,39 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private JwtBlacklistService jwtBlacklistService;
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+
+            if(authHeader == null || !authHeader.startsWith("Bearer ")){
+                return ResponseEntity.badRequest().body(new MessageResponse("No valid token provided"));
+            }
+
+            String token = authHeader.substring(7);
+
+            String username =null;
+            try {
+                username = jwtUtil.extractUserName(token);
+            } catch(Exception e){
+                return ResponseEntity.badRequest().body(new MessageResponse("Invalid token format"));
+            }
+
+            jwtBlacklistService.blacklistTokens(token);
+
+            logger.info("user {} logged out successfullly!",username);
+            return ResponseEntity.ok(new MessageResponse("Logged out Successfully!"));
+
+        } catch(Exception e){
+            logger.error("Error during logout", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Logout failed"));
+        }
+    }
+    
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
